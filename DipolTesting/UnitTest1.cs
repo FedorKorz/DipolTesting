@@ -1,26 +1,61 @@
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
-using System.Diagnostics;
 using NUnit.Framework;
 using static DipolTesting.Utils;
 
+
+namespace DipolTesting;
 
 [TestFixture]
 public class MyTests
 {
     private static Process _process;
-    
+    private static Application _application;
+    private static Window _mainWindow;
+    private static TextBox _textBox;
+    private static Button _button;
+    private static Label _header;
+    private static Label _errorTextBlock;
+
+
     [SetUp]
     public void SetUp()
     {
-        _process =
-            Process.Start(
-                "C:\\Users\\user\\RiderProjects\\DipolTestTask\\DipolTestTask\\bin\\Release\\net7.0\\DipolTestTask.exe");
-        if (_process == null) throw new Exception("Не удалось запустить приложение.");
+        const string appPath = "C:\\Users\\user\\RiderProjects\\DipolTestTask\\DipolTestTask\\bin\\Release\\net7.0\\DipolTestTask.exe";
+        
+        var automation = new UIA3Automation();
 
-        System.Threading.Thread.Sleep(2000);
+        if (!File.Exists(appPath))
+            throw new FileNotFoundException($"Не удалось найти приложение по пути: {appPath}");
+        
+        Thread.Sleep(2000);
+
+        _process = Process.Start(appPath);
+        _application = Application.Attach(_process);
+
+        _mainWindow = _application.GetMainWindow(automation);
+        
+        _textBox = _mainWindow.FindFirstDescendant(cf => cf.ByAutomationId("MyTextBox"))?.AsTextBox();
+        _button = _mainWindow.FindFirstChild(cf => cf.ByAutomationId("MyButton"))?.As<Button>();
+        _header =  _mainWindow.FindFirstChild(cf => cf.ByAutomationId("MyHeader"))?.As<Label>();
+        _errorTextBlock =  _mainWindow.FindFirstChild(cf => cf.ByAutomationId("ErrorTextBlock"))?.As<Label>();
+        if (_textBox == null || _button == null) throw new Exception("Не удалось найти элемент.");
+        if (_process == null) throw new Exception("Не удалось запустить приложение.");
+    }
+
+    [Test]
+    public void AreAllElementsVisible()
+    {
+        Assert.That(_header.IsAvailable, Is.True, "Заголовок не отображается");
+        Assert.That(_mainWindow.IsAvailable, Is.True, "Главное окно не отображается");
+        Assert.That(_textBox.IsAvailable, Is.True, "Текстовое поле не отображается");
+        Assert.That(_button.IsAvailable, Is.True, "Кнопка смены цвета не отображается");    
+        Assert.That(_errorTextBlock.IsAvailable, Is.True, "Сообщение об ошибке отображается до активации");
     }
 
 
@@ -32,15 +67,12 @@ public class MyTests
             var app = Application.Attach(_process.Id);
             var mainWindow = app.GetMainWindow(automation);
 
-            var textBox = mainWindow
-                .FindFirstDescendant(cf => cf.ByControlType(FlaUI.Core.Definitions.ControlType.Edit)).AsTextBox();
-            var button = mainWindow.FindFirstChild(cf => cf.ByAutomationId("MyButton"));
 
-            if (textBox != null)
+            if (_textBox != null)
             {
-                button.Click();
-                var locationX = textBox.BoundingRectangle.Location.X;
-                var locationY = textBox.BoundingRectangle.Location.Y;
+                _button.Click();
+                var locationX = _textBox.BoundingRectangle.Location.X;
+                var locationY = _textBox.BoundingRectangle.Location.Y;
                 Console.Write(locationX);
                 Console.Write(locationY);
 
@@ -64,5 +96,4 @@ public class MyTests
         _process.Kill();
         _process.Dispose();
     }
-
 }
