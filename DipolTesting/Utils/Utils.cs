@@ -14,6 +14,7 @@ public static class Utils
 
         return bitmap.GetPixel(0, 0);
     }
+    
 
     public static string ArgbToHex(Color colorInRgb)
     {
