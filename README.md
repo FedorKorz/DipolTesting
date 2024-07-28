@@ -30,7 +30,7 @@
 
 Пример теста с NUnit:
 
-[Видео работы проекта]([https://website-name.com](https://www.youtube.com/watch?v=MmH45CFPrhw))
+[Видео работы проекта](https://www.youtube.com/watch?v=MmH45CFPrhw)
 
 ```csharp
 [Test]
