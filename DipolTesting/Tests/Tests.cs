@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using DipolTesting.Logger;
 using DipolTesting.PageObjectModel;
 using FlaUI.Core;
 using FlaUI.UIA3;
@@ -16,6 +17,7 @@ public class MyTests
     private Process _process;
     private Application _application;
     private MainPage _mainPage;
+    private ILogger _logger;
 
 
     [SetUp]
@@ -25,9 +27,12 @@ public class MyTests
 
         Thread.Sleep(2000);
 
-        var driver = new Driver();
+        _logger = new LoggerManager();
+        
+        var driver = new Driver(_logger);
         _application = driver.GetApp();
         _process = driver.GetProcess();
+        
 
         if (_process == null) throw new Exception("Не удалось запустить приложение.");
 
